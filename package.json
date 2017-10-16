@@ -1,0 +1,16 @@
+{
+  "name": "final-project",
+  "version": "1.0.0",
+  "description": "Roommate finder app that has a rating system",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Eujun Chin",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.16.2",
+    "hbs": "^4.0.1",
+    "sqlite3": "^3.1.13"
+  }
+}
