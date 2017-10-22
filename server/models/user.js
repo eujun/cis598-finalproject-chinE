@@ -5,21 +5,28 @@ const _ = require('lodash');
 const bcrypt = require('bcryptjs');
 
 var UserSchema = new mongoose.Schema({
-  email: {
+  username: {
     type: String,
     required: true,
     trim: true,
     minlength: 1,
     unique: true,
-    validate: {
-      validator: validator.isEmail,
-      message: `{VALUE} is not a valid email`
-    }
+  },
+  email: {
+    type: String,
+    // required: true,
+    default: null,
+    trim: true
+    // unique: true,
+    // validate: {
+    //   validator: validator.isEmail,
+    //   message: `{VALUE} is not a valid email`
+    // }
   },
   password: {
     type: String,
     required: true,
-    minlength: 4
+    minlength: 1
   },
   tokens: [{
     access: {
@@ -30,7 +37,15 @@ var UserSchema = new mongoose.Schema({
       type: String,
       required: true
     }
-  }]
+  }],
+  name: {
+    type: String,
+    default: ""
+  },
+  phone: {
+    type: String,
+    default: ""
+  }
 });
 
 //Shows only primary id and email, hides all other information
@@ -38,7 +53,7 @@ UserSchema.methods.toJSON = function () {
   var user = this;
   var userObject = user.toObject();
 
-  return _.pick(userObject, ['_id', 'email']);
+  return _.pick(userObject, ['_id', 'username', 'name', 'phone', 'email']);
 };
 
 //generate authentication token for user
@@ -87,10 +102,10 @@ UserSchema.statics.findByToken = function (token) {
 };
 
 //find user by email and password
-UserSchema.statics.findByCredentials = function (email, password) {
+UserSchema.statics.findByCredentials = function (username, password) {
   var User = this;
 
-  return User.findOne({email}).then((user) => {
+  return User.findOne({username}).then((user) => {
     if (!user) {
       return Promise.reject("User not found.");
     }

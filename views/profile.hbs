@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Profile Page</title>
+  </head>
+  <body>
+    {{> header}}
+    <p>Hi {{name}}</p>
+    <p>Phone: {{phone}}</p>
+    <p>Email: {{email}}</p>
+    <form action="/editProfile" method="GET">
+      <input type="submit" value="Edit">
+    </form>
+    <p>
+    <form action="/logout" method="GET">
+      <input type="submit" value="Logout">
+    </form>
+    {{> footer}}
+  </body>
+</html>

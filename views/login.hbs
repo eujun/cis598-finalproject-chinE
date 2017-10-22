@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Log In Page</title>
+  </head>
+  <body>
+    {{> header}}
+    <p><a href="/signup">Sign Up Page</a></p>
+    <p><a href="/login2">Login Page</a></p>
+    <form action="/login2" method="POST">
+      Username: <input type="text" name="username" required placeholder = "User ID"><br>
+      Password: <input type="password" name="password" required placeholder = "Password"><br>
+      <input type="submit" value="Log in">
+    </form>
+    {{> footer}}
+  </body>
+</html>
