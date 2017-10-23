@@ -143,7 +143,7 @@ app.post('/editProfile', checkSignIn, (req,res) => {
       email: fields.email
     }, {new: true}).then((user) =>{
       if(!user) {
-        return res.status(404).send("ID not found.")
+        return res.status(404).send("ID not found.");
       }
       req.session.user = user;
       res.redirect('/profile');
@@ -151,6 +151,42 @@ app.post('/editProfile', checkSignIn, (req,res) => {
       res.status(400).send(e);
     });
   });
+});
+
+// GET /users/:id       visits profile pages of other users
+app.get('/users/:id', checkSignIn, (req,res) => {
+  var id = req.params.id;
+  if (!ObjectID.isValid(id)) {
+    return res.status(404).send("Invalid ID");
+  }
+  User.findById(id).then((user) => {
+    if(!user) {
+      return res.status(404).send("ID not found.");
+    }
+    res.render('viewProfile.hbs', {
+      pageTitle: 'View Profile',
+      name: user.name,
+      phone: user.phone,
+      email: user.email,
+      id: id
+    });
+  });
+});
+
+// GET /rate/:id
+app.get('/rate/:id', checkSignIn, (req,res) => {
+  res.render('rate.hbs', {
+    pageTitle: 'Rating Page'
+  });
+});
+
+// POST /rate/:id
+app.post('/rate/:id', checkSignIn, (req,res) => {
+  var viewer = req.session.user;
+  var id = req.params.id;
+  if (!ObjectID.isValid(id)) {
+    return res.status(404).send("Invalid ID");
+  }
 });
 
 /////////////////////////////////////////////////////////////////

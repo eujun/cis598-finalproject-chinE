@@ -6,15 +6,11 @@
   </head>
   <body>
     {{> header}}
-    <p>Hi, {{name}}</p>
+    <p>Name: {{name}}</p>
     <p>Phone: {{phone}}</p>
     <p>Email: {{email}}</p>
-    <form action="/editProfile" method="GET">
-      <input type="submit" value="Edit">
-    </form>
-    <p>
-    <form action="/logout" method="GET">
-      <input type="submit" value="Logout">
+    <form action="/rate/{{id}}" method="GET">
+      <input type="submit" value="Rate">
     </form>
     {{> footer}}
   </body>
