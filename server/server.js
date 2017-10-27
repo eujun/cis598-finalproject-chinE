@@ -168,15 +168,28 @@ app.get('/users/:id', checkSignIn, (req,res) => {
       name: user.name,
       phone: user.phone,
       email: user.email,
-      id: id
+      id: id,
+      rating: Math.round(user.rating * 100) / 100,
+      ratings: user.ratings
     });
   });
 });
 
 // GET /rate/:id
 app.get('/rate/:id', checkSignIn, (req,res) => {
-  res.render('rate.hbs', {
-    pageTitle: 'Rating Page'
+  var id = req.params.id;
+  if (!ObjectID.isValid(req.params.id)) {
+    return res.status(404).send("Invalid ID");
+  }
+  User.findById(id).then((user) => {
+    if(!user) {
+      return res.status(404).send("ID not found.");
+    }
+    res.render('rate.hbs', {
+      pageTitle: 'Rating Page',
+      id: id,
+      name: user.name
+    });
   });
 });
 
@@ -184,9 +197,22 @@ app.get('/rate/:id', checkSignIn, (req,res) => {
 app.post('/rate/:id', checkSignIn, (req,res) => {
   var viewer = req.session.user;
   var id = req.params.id;
+  var form = new formidable.IncomingForm();
   if (!ObjectID.isValid(id)) {
     return res.status(404).send("Invalid ID");
   }
+  form.parse(req, (err, fields, files) => {
+    User.findById(id).then((user) => {
+      if(!user) {
+        return res.status(404).send("ID not found.");
+      }
+      user.updateRatings(fields,viewer);
+      user.calculateRatings();
+      res.redirect('/users/' + id);
+    }).catch((e) => {
+      res.send(e);
+    });
+  });
 });
 
 /////////////////////////////////////////////////////////////////

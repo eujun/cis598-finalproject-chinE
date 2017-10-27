@@ -6,8 +6,13 @@
   </head>
   <body>
     {{> header}}
-    <p>Some text here</p>
-
+    <p>Rating {{name}} </p>
+    <form action="/rate/{{id}}" method="POST">
+      Rating: <input type="text" name="rating" placeholder="1-5"><br>
+      Comment: <br>
+      <textarea rows="5" cols="50" input type="text" name="comment"></textarea> <br>
+      <input type="submit" value="Rate">
+    </form>
     {{> footer}}
   </body>
 </html>

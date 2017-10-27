@@ -28,16 +28,6 @@ var UserSchema = new mongoose.Schema({
     required: true,
     minlength: 1
   },
-  tokens: [{
-    access: {
-      type: String,
-      required: true
-    },
-    token: {
-      type: String,
-      required: true
-    }
-  }],
   name: {
     type: String,
     default: ""
@@ -45,7 +35,25 @@ var UserSchema = new mongoose.Schema({
   phone: {
     type: String,
     default: ""
-  }
+  },
+  rating: {
+    type: Number,
+    default: null
+  },
+  ratings: [{
+    value: {
+      type: Number,
+      default: null
+    },
+    text: {
+      type: String,
+      default: null
+    },
+    raterID: {
+      type: String,
+      default: null
+    }
+  }]
 });
 
 //Shows only primary id and email, hides all other information
@@ -67,6 +75,30 @@ UserSchema.methods.generateAuthToken = function () {
   return user.save().then(() => {
     return token;
   });
+};
+
+//Push the new rating value and text to the array
+UserSchema.methods.updateRatings = function (fields,viewer) {
+  var user = this;
+  var value = fields.rating;
+  var text = fields.comment;
+  var raterID = viewer._id;
+  user.ratings.push({value: value, text: text, raterID: raterID});
+  user.save();
+};
+
+//Calculate the new average rating and store it in the rating field
+UserSchema.methods.calculateRatings = function () {
+  var user = this;
+  var rating = 0;
+  for (var i = 0 ; i < user.ratings.length; i ++) {
+    rating += user.ratings[i].value;
+    //console.log(rating);
+  }
+  rating = rating/user.ratings.length;
+  //console.log(rating);
+  user.rating = rating;
+  user.save();
 };
 
 //remove the token
