@@ -14,14 +14,8 @@ var UserSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    // required: true,
     default: null,
     trim: true
-    // unique: true,
-    // validate: {
-    //   validator: validator.isEmail,
-    //   message: `{VALUE} is not a valid email`
-    // }
   },
   password: {
     type: String,
@@ -30,11 +24,11 @@ var UserSchema = new mongoose.Schema({
   },
   name: {
     type: String,
-    default: ""
+    default: null
   },
   phone: {
     type: String,
-    default: ""
+    default: null
   },
   rating: {
     type: Number,
@@ -53,7 +47,11 @@ var UserSchema = new mongoose.Schema({
       type: String,
       default: null
     }
-  }]
+  }],
+  roomID: {
+    type: String,
+    default: null
+  }
 });
 
 //Shows only primary id and email, hides all other information
@@ -98,6 +96,13 @@ UserSchema.methods.calculateRatings = function () {
   rating = rating/user.ratings.length;
   //console.log(rating);
   user.rating = rating;
+  user.save();
+};
+
+//Set room ID to user
+UserSchema.methods.setRoomID = function(id) {
+  var user = this;
+  user.roomID = id
   user.save();
 };
 

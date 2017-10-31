@@ -9,6 +9,7 @@ const formidable = require('formidable');
 
 var {mongoose} = require('./db/mongoose.js');
 var {User} = require('./models/user.js');
+var {Room} = require('./models/room.js');
 var {authenticate} = require('./middleware/authenticate.js');
 var {checkSignIn} = require('./middleware/authenticate.js');
 const port = process.env.PORT || 3000;
@@ -95,7 +96,7 @@ app.post('/login2', (req,res) => {
   form.parse(req, (err, fields, files) => {
     User.findByCredentials(fields.username, fields.password).then((user) => {
       req.session.user = user;
-      console.log(req.session.user);
+      //console.log(req.session.user);
       res.redirect('/profile');
     }).catch((e) => {
       res.status(400).send(e);
@@ -211,6 +212,39 @@ app.post('/rate/:id', checkSignIn, (req,res) => {
       res.redirect('/users/' + id);
     }).catch((e) => {
       res.send(e);
+    });
+  });
+});
+
+// GET /create_room
+app.get('/create_room', checkSignIn, (req,res) => {
+  res.render('createRoom.hbs', {
+    pageTitle: 'Create New Room'
+  });
+});
+
+// POST /create_room
+app.post('/create_room', checkSignIn, (req, res) => {
+  //var body = _.pick(req.body, ['username', 'password']);
+  //var user = req.session.user;
+  var form = new formidable.IncomingForm();
+  form.parse(req,function(err,fields,files) {
+    var room = new Room({
+      creatorID: req.session.user._id,
+      size: fields.size,
+      address: fields.address,
+      price: fields.price
+    });
+    room.users.push({userID: req.session.user._id});
+    room.save().then(() => {
+    }).catch((e) => {
+      res.status(400).send(e);
+    });
+    User.findById(req.session.user._id).then((user) => {
+      if(!user) {
+        return res.status(404).send("ID not found.");
+      }
+      user.setRoomID(room._id);
     });
   });
 });
