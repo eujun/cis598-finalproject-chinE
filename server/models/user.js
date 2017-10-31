@@ -78,11 +78,11 @@ UserSchema.methods.generateAuthToken = function () {
 //Push the new rating value and text to the array
 UserSchema.methods.updateRatings = function (fields,viewer) {
   var user = this;
-  var value = fields.rating;
+  var value = fields.starcount;
   var text = fields.comment;
   var raterID = viewer._id;
   user.ratings.push({value: value, text: text, raterID: raterID});
-  user.save();
+  //user.save();
 };
 
 //Calculate the new average rating and store it in the rating field
