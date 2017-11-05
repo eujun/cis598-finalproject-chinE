@@ -25,7 +25,7 @@ app.use(session({
   cookie: { secure: false }
 }));
 
-hbs.registerPartials(__dirname + './../views/partials');
+hbs.registerPartials(__dirname + '/../views/partials');
 app.set('view engine', 'hbs');
 hbs.registerHelper('getCurrentYear', () => {
   return new Date().getFullYear();
