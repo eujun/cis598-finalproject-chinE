@@ -55,12 +55,12 @@ var UserSchema = new mongoose.Schema({
 });
 
 //Shows only primary id and email, hides all other information
-UserSchema.methods.toJSON = function () {
-  var user = this;
-  var userObject = user.toObject();
-
-  return _.pick(userObject, ['_id', 'username', 'name', 'phone', 'email']);
-};
+// UserSchema.methods.toJSON = function () {
+//   var user = this;
+//   var userObject = user.toObject();
+//
+//   return _.pick(userObject, ['_id', 'username', 'name', 'phone', 'email', 'rating']);
+// };
 
 //generate authentication token for user
 UserSchema.methods.generateAuthToken = function () {
@@ -102,6 +102,8 @@ UserSchema.methods.calculateRatings = function () {
 //Set room ID to user
 UserSchema.methods.setRoomID = function(id) {
   var user = this;
+  // if (!user.roomID)
+  //   return Promise.reject("User already in a room group");
   user.roomID = id
   user.save();
 };

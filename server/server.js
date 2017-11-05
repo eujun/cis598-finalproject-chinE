@@ -74,20 +74,30 @@ app.post('/signup', (req, res) => {
 
 // GET /profile
 app.get('/profile', checkSignIn, (req,res) => {
-  res.render('profile.hbs' ,{
-    pageTitle: 'Profile',
-    username: req.session.user.username,
-    name: req.session.user.name,
-    phone: req.session.user.phone,
-    email: req.session.user.email
+  User.findById(req.session.user._id).then((user) => {
+    Room.findById(user.roomID).then((room) => {
+      //console.log(room);
+      res.render('profile.hbs' ,{
+        pageTitle: 'Profile',
+        username: user.username,
+        name: user.name,
+        phone: user.phone,
+        email: user.email,
+        rating: user.rating,
+        room: room
+      });
+    });
   });
 });
 
 //GET /login2
 app.get('/login2', (req, res) => {
-   res.render('login.hbs', {
-     pageTitle: 'Login Page'
-   });
+  req.session.destroy(() => {
+    console.log("User logged out.");
+  });
+  res.render('login.hbs', {
+    pageTitle: 'Login Page'
+  });
 });
 
 //POST /login2
@@ -112,12 +122,12 @@ app.get('/logout', checkSignIn, (req, res) => {
   res.redirect('/login2');
 });
 
-//redirects to login page if users tries to access profile without logging in first
-app.use('/profile', (err, req, res, next) => {
-  console.log(err);
-   //User should be authenticated! Redirect him to log in.
-  res.redirect('/login2');
-});
+// //redirects to login page if users tries to access profile without logging in first
+// app.use('/profile', (err, req, res, next) => {
+//   console.log(err);
+//    //User should be authenticated! Redirect him to log in.
+//   res.redirect('/login2');
+// });
 
 //GET /editProfile
 app.get('/editProfile', checkSignIn, (req, res) => {
@@ -159,6 +169,9 @@ app.get('/users/:id', checkSignIn, (req,res) => {
   var id = req.params.id;
   if (!ObjectID.isValid(id)) {
     return res.status(404).send("Invalid ID");
+  }
+  if (id == req.session.user._id) {
+    return res.redirect('/profile');
   }
   User.findById(id).then((user) => {
     if(!user) {
@@ -235,20 +248,141 @@ app.post('/create_room', checkSignIn, (req, res) => {
       address: fields.address,
       price: fields.price
     });
-    room.users.push({userID: req.session.user._id});
-    room.save().then(() => {
-    }).catch((e) => {
-      res.status(400).send(e);
-    });
+
     User.findById(req.session.user._id).then((user) => {
       if(!user) {
         return res.status(404).send("ID not found.");
       }
-      user.setRoomID(room._id);
+      if(user.roomID){
+        return res.status(400).send("You are already in another room group");
+      }
+      user.roomID = room._id;
+      user.save();
+      room.users.push({userID: req.session.user._id});
+      room.save();
+      res.redirect('/mygroup');
     });
   });
 });
 
+app.get('/rooms', checkSignIn, (req,res) => {
+  Room.find().then((rooms) => {
+    if(!rooms){
+      return res.status(404).send("RoomID not found.");
+    }
+    res.render('rooms.hbs', {
+      pageTitle: 'All Rooms',
+      rooms: rooms
+    });
+  });
+});
+
+app.get('/rooms/join/:id', checkSignIn, (req,res) => {
+  var id = req.params.id;
+  if (!ObjectID.isValid(id)) {
+    return res.status(404).send("Invalid ID");
+  }
+  Room.findById(id).then((room) => {
+    if(!room){
+      return res.status(404).send("RoomID not found.");
+    }
+    for(i=0; i<room.users.length; i++) {
+      if(room.users[i].userID == req.session.user._id){
+        return res.status(400).send("You are already in this room group");
+      }
+    }
+    User.findById(req.session.user._id).then((user) => {
+      if(!user) {
+        return res.status(404).send("ID not found.");
+      }
+      if(user.roomID){
+        return res.status(400).send("You are already in another room group");
+      }
+      user.roomID = id;
+      user.save();
+      room.users.push({userID: user._id});
+      room.save();
+      res.redirect('/mygroup');
+    });
+  });
+});
+
+app.get('/rooms/leave', checkSignIn, (req,res) => {
+  User.findById(req.session.user._id).then((user) => {
+    if(!user) {
+      return res.status(404).send("User not found.");
+    }
+    //console.log(user.roomID);
+    Room.findById(user.roomID).then((room) => {
+      if(!room) {
+        return res.status(404).send("Room not found.");
+      }
+      if(user._id == room.creatorID && room.users.length > 1) {
+        return res.status(400).send("Room creator cannot leave room while there are other users in the room");
+      }
+      if (user._id == room.creatorID && room.users.length == 1) {
+        Room.findByIdAndRemove(room._id).then(() => {
+          user.roomID = null;
+          user.save();
+          res.redirect('/profile');
+        }, () => {
+          res.status(400).send("Error deleting room");
+        });
+      } else {
+        room.removeUser(user._id).then(() => {
+          //console.log(room.users);
+          user.roomID = null;
+          user.save();
+          res.redirect('/profile');
+        }, () => {
+          res.status(400).send("Error removing user from room");
+        });
+      }
+    });
+  });
+});
+
+app.get('/kick/:id', checkSignIn,(req,res) => {
+  id = req.params.id;
+  if (id == req.session.user._id) {
+    return res.status(400).send("Cannot kick yourself.");
+  }
+  User.findById(id).then((user) => {
+    if(!user) {
+      return res.status(404).send("User not found.");
+    }
+    Room.findById(user.roomID).then((room) => {
+      if(!room) {
+        return res.status(404).send("Room not found.");
+      }
+      if(room.creatorID != req.session.user._id) {
+        return res.status(401).send("Only the room creator can kick other users.");
+      }
+      room.removeUser(user._id).then(() => {
+        //console.log(room.users);
+        user.roomID = null;
+        user.save();
+        res.redirect('/mygroup');
+      }, () => {
+        res.status(400).send("Error removing user from room");
+      });
+    });
+  });
+})
+
+app.get('/mygroup', checkSignIn, (req,res) => {
+  User.findById(req.session.user._id).then((user) => {
+    Room.findById(user.roomID).then((room) => {
+      //console.log(room);
+      res.render('myGroup.hbs' ,{
+        pageTitle: 'My Group',
+        Uid : user._id,
+        room: room,
+        creatorID: room.creatorID
+      });
+    });
+  });
+});
 /////////////////////////////////////////////////////////////////
 
 //GET /users/me
@@ -285,6 +419,33 @@ app.delete('/users/logout', authenticate, (req,res) => {
 // hbs.registerHelper('screamIt', (text) => {
 //   return text.toUpperCase()
 // });
+hbs.registerHelper('ifCond', function (v1, operator, v2, options) {
+
+    switch (operator) {
+        case '==':
+            return (v1 == v2) ? options.fn(this) : options.inverse(this);
+        case '===':
+            return (v1 === v2) ? options.fn(this) : options.inverse(this);
+        case '!=':
+            return (v1 != v2) ? options.fn(this) : options.inverse(this);
+        case '!==':
+            return (v1 !== v2) ? options.fn(this) : options.inverse(this);
+        case '<':
+            return (v1 < v2) ? options.fn(this) : options.inverse(this);
+        case '<=':
+            return (v1 <= v2) ? options.fn(this) : options.inverse(this);
+        case '>':
+            return (v1 > v2) ? options.fn(this) : options.inverse(this);
+        case '>=':
+            return (v1 >= v2) ? options.fn(this) : options.inverse(this);
+        case '&&':
+            return (v1 && v2) ? options.fn(this) : options.inverse(this);
+        case '||':
+            return (v1 || v2) ? options.fn(this) : options.inverse(this);
+        default:
+            return options.inverse(this);
+    }
+});
 
 
 

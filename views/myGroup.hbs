@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Profile Page</title>
+  </head>
+  <body>
+    {{> header}}
+    {{#ifCond  Uid '==' creatorID }}
+      {{#if room}}
+      My room group:
+        <ol>
+          {{#room.users}}
+            <li>
+              <a href="/users/{{userID}}">Roommate </a>
+              <a href="/kick/{{userID}}" style="padding-left:3em">Kick </a>
+            </li>
+          {{/room.users}}
+        </ol>
+          <a href="rooms/leave">Leave</a>
+      {{/if}}
+    {{/ifCond}}
+    {{#ifCond  Uid '!=' creatorID }}
+      {{#if room}}
+      My room group:
+        <ol>
+          {{#room.users}}
+            <li>
+              <a href="/users/{{userID}}">Roommate </a>
+            </li>
+          {{/room.users}}
+        </ol>
+          <a href="rooms/leave">Leave</a>
+      {{/if}}
+    {{/ifCond}}
+    {{> footer}}
+  </body>
+</html>

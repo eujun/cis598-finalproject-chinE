@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Rooms</title>
+  </head>
+  <body>
+    {{> header}}
+    <div style="border:1px solid black;">
+      {{#rooms}}
+        <div>Address: {{address}}</div>
+        <div>Size: {{size}}</div>
+        <div>Rental per month: {{price}}</div>
+        <ol border>
+          {{#users}}
+            <li><a href="/users/{{userID}}">Roommate</a></li>
+          {{/users}}
+        </ol>
+        <div><a href="/rooms/join/{{_id}}">Join</a></div>
+      </p>
+      {{/rooms}}
+    </div>
+    {{> footer}}
+  </body>
+</html>

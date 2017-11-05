@@ -9,6 +9,10 @@
     <p>Hi, {{name}}</p>
     <p>Phone: {{phone}}</p>
     <p>Email: {{email}}</p>
+    <p>Average Rating: {{rating}}☆</p>
+    {{#if room}}
+      <p><a href="/mygroup">My Group</a></p>
+    {{/if}}
     <form action="/editProfile" method="GET">
       <input type="submit" value="Edit">
     </form>

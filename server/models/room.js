@@ -20,7 +20,10 @@ var RoomSchema = new mongoose.Schema({
     required: true
   },
   users: [{
-    userID: String
+    userID: {
+      type: String,
+      unique: true
+    }
   }],
   price: {
     type: Number,
@@ -28,6 +31,17 @@ var RoomSchema = new mongoose.Schema({
     required: true
   }
 });
+
+RoomSchema.methods.removeUser = function (id) {
+  var room = this;
+  return room.update({
+    $pull: {
+      users: {
+        userID: id
+      }
+    }
+  })
+};
 
 var Room = mongoose.model('Room', RoomSchema);
 
