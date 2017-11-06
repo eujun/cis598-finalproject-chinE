@@ -6,8 +6,8 @@
   </head>
   <body>
     {{> header}}
-    <div style="border:1px solid black;">
       {{#rooms}}
+      <div style="border:1px solid black;">
         <div>Address: {{address}}</div>
         <div>Size: {{size}}</div>
         <div>Rental per month: {{price}}</div>
@@ -18,8 +18,8 @@
         </ol>
         <div><a href="/rooms/join/{{_id}}">Join</a></div>
       </p>
+      </div>
       {{/rooms}}
-    </div>
     {{> footer}}
   </body>
 </html>
