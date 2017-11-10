@@ -45,6 +45,11 @@ app.use((req, res, next) => {
   next();
 });
 
+//GET /
+app.get('/', (req,res) => {
+  res.render('start.hbs');
+});
+
 //GET /signup
 app.get('/signup', (req,res) => {
   res.render('signup.hbs', {
@@ -265,7 +270,7 @@ app.post('/create_room', checkSignIn, (req, res) => {
   });
 });
 
-app.get('/rooms', checkSignIn, (req,res) => {
+app.get('/rooms', (req,res) => {
   Room.find().then((rooms) => {
     if(!rooms){
       return res.status(404).send("RoomID not found.");
