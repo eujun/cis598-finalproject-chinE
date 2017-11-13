@@ -1,17 +1,47 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <title>Profile Page</title>
-  </head>
+<title>Profile</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
+.w3-bar,h1,button {font-family: "Montserrat", sans-serif}
+.fa-anchor,.fa-coffee {font-size:200px}
+</style>
   <body>
-    {{> header}}
-    <form action="/editProfile" method="POST">
-      Name: <input type="text" name="name" value={{name}}><br>
-      Phone: <input type="text" name="phone" value={{phone}}><br>
-      Email: <input type="text" name="email" value={{email}}><br>
-      <input type="submit" value="Save">
-    </form>
+    <div class="w3-top">
+      <div class="w3-bar w3-blue w3-card w3-left-align w3-large">
+        <a class="w3-bar-item w3-button w3-hide-medium w3-hide-large w3-right w3-padding-large w3-hover-white w3-large w3-red" href="javascript:void(0);" onclick="myFunction()" title="Toggle Navigation Menu"><i class="fa fa-bars"></i></a>
+        <a href="/profile" class="w3-bar-item w3-button w3-padding-large w3-hover-white">Profile</a>
+        <a href="/mygroup" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">My Group</a>
+        <a href="/rooms" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Rooms</a>
+        <a href="/logout" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Logout</a>
+      </div>
+
+      <!-- Navbar on small screens
+      <div id="navDemo" class="w3-bar-block w3-white w3-hide w3-hide-large w3-hide-medium w3-large">
+        <a href="#" class="w3-bar-item w3-button w3-padding-large">Link 1</a>
+        <a href="#" class="w3-bar-item w3-button w3-padding-large">Link 2</a>
+        <a href="#" class="w3-bar-item w3-button w3-padding-large">Link 3</a>
+        <a href="#" class="w3-bar-item w3-button w3-padding-large">Link 4</a>
+      </div>  -->
+    </div>
+
+    <div class="w3-row-padding w3-padding-64 w3-container w3-light-blue ">
+      <div class="w3-content">
+          <h2>Edit Profile</h2>
+          <form action="/editProfile" method="POST">
+            <p><input type="text" name="name" required placeholder="name" class="w3-medium w3-round" value="{{name}}">
+            <p><input type="text" name="phone" placeholder="phone" class="w3-medium w3-round" value="{{phone}}">
+            <p><input type="text" name="email" required placeholder="email" class="w3-medium w3-round" value="{{email}}">
+            <p><input type="submit" value="Save" class="w3-button w3-black w3-padding-medium w3-medium w3-margin-top">
+          </form>
+      </div>
+    </div>
     {{> footer}}
   </body>
 </html>

@@ -70,7 +70,7 @@ app.post('/signup', (req, res) => {
       //res.send(user);
       req.session.user = user;
       console.log(req.session.user);
-      res.redirect('/profile');
+      res.redirect('/editProfile');
     }).catch((e) => {
       res.status(400).send(e);
     })
@@ -379,6 +379,9 @@ app.get('/mygroup', checkSignIn, (req,res) => {
   User.findById(req.session.user._id).then((user) => {
     Room.findById(user.roomID).then((room) => {
       //console.log(room);
+      if(!room) {
+        res.redirect('/rooms');
+      }
       res.render('myGroup.hbs' ,{
         pageTitle: 'My Group',
         Uid : user._id,
