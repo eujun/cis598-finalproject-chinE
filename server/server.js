@@ -234,15 +234,15 @@ app.post('/rate/:id', checkSignIn, (req,res) => {
   });
 });
 
-// GET /create_room
-app.get('/create_room', checkSignIn, (req,res) => {
+// GET /createRoom
+app.get('/createRoom', checkSignIn, (req,res) => {
   res.render('createRoom.hbs', {
     pageTitle: 'Create New Room'
   });
 });
 
-// POST /create_room
-app.post('/create_room', checkSignIn, (req, res) => {
+// POST /createRoom
+app.post('/createRoom', checkSignIn, (req, res) => {
   //var body = _.pick(req.body, ['username', 'password']);
   //var user = req.session.user;
   var form = new formidable.IncomingForm();
@@ -380,7 +380,7 @@ app.get('/mygroup', checkSignIn, (req,res) => {
     Room.findById(user.roomID).then((room) => {
       //console.log(room);
       if(!room) {
-        res.redirect('/rooms');
+        res.redirect('/nogroup');
       }
       res.render('myGroup.hbs' ,{
         pageTitle: 'My Group',
@@ -390,6 +390,10 @@ app.get('/mygroup', checkSignIn, (req,res) => {
       });
     });
   });
+});
+
+app.get('/nogroup', checkSignIn, (req,res) => {
+  res.render('noGroup.hbs');
 });
 /////////////////////////////////////////////////////////////////
 

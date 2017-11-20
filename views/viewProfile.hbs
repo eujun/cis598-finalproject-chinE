@@ -33,20 +33,22 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
 
     <div class="w3-row-padding w3-padding-64 w3-container w3-light-blue">
       <div class="w3-content">
-        <p>Name: {{name}}</p>
-        <p>Phone: {{phone}}</p>
-        <p>Email: {{email}}</p>
-        <p>Average Rating: {{rating}}☆ ({{ratings.length}} ratings)</p>
+        <h2>{{name}}</h2>
+        <h4>{{phone}}</h4>
+        <h4>{{email}}</h4>
+        <h4>Average Rating: {{rating}}☆ ({{ratings.length}} ratings)</h4>
         <button class="w3-button w3-black w3-padding-medium w3-medium w3-margin-top" onclick="window.location.href='/rate/{{id}}'">Rate this User</button>
       </div>
     </div>
     <div class="w3-row-padding w3-container">
       <div class="w3-content">
-          <h2>Ratings:</h2>
+        {{#if ratings}}
+        <h2>Ratings:</h2>
           {{#ratings}}
             <div class="w3-panel w3-border w3-round-large w3-border-black">{{value}}☆
             <p>{{text}}</div>
           {{/ratings}}
+        {{/if}}
       </div>
     </div>
     {{> footer}}
