@@ -72,7 +72,14 @@ app.post('/signup', (req, res) => {
       console.log(req.session.user);
       res.redirect('/editProfile');
     }).catch((e) => {
-      res.status(400).send(e);
+      if (e.name === 'MongoError' && e.code === 11000) {
+        return res.render('error2.hbs', {
+          errorMessage: "User already exist, please login with correct password.",
+        });
+      }
+      else {
+        res.status(400).send(e);
+      }
     })
   });
 });
@@ -114,7 +121,9 @@ app.post('/login2', (req,res) => {
       //console.log(req.session.user);
       res.redirect('/profile');
     }).catch((e) => {
-      res.status(400).send(e);
+      return res.render('error2.hbs', {
+        errorMessage: e,
+      });
     });
   });
 });
@@ -150,7 +159,9 @@ app.post('/editProfile', checkSignIn, (req,res) => {
   var id = req.session.user._id;
 
   if (!ObjectID.isValid(id)) {
-    return res.status(404).send("Invalid ID");
+    return res.render('error.hbs', {
+      errorMessage: "Invalid ID.",
+    });
   }
   form.parse(req, (err, fields, files) => {
     User.findByIdAndUpdate(id, {
@@ -159,7 +170,9 @@ app.post('/editProfile', checkSignIn, (req,res) => {
       email: fields.email
     }, {new: true}).then((user) =>{
       if(!user) {
-        return res.status(404).send("ID not found.");
+        return res.render('error.hbs', {
+          errorMessage: "ID not found.",
+        });
       }
       req.session.user = user;
       res.redirect('/profile');
@@ -173,14 +186,18 @@ app.post('/editProfile', checkSignIn, (req,res) => {
 app.get('/users/:id', checkSignIn, (req,res) => {
   var id = req.params.id;
   if (!ObjectID.isValid(id)) {
-    return res.status(404).send("Invalid ID");
+    return res.render('error.hbs', {
+      errorMessage: "Invalid ID.",
+    });
   }
   if (id == req.session.user._id) {
     return res.redirect('/profile');
   }
   User.findById(id).then((user) => {
     if(!user) {
-      return res.status(404).send("ID not found.");
+      return res.render('error.hbs', {
+        errorMessage: "ID not found.",
+      });
     }
     res.render('viewProfile.hbs', {
       pageTitle: 'View Profile',
@@ -198,11 +215,15 @@ app.get('/users/:id', checkSignIn, (req,res) => {
 app.get('/rate/:id', checkSignIn, (req,res) => {
   var id = req.params.id;
   if (!ObjectID.isValid(req.params.id)) {
-    return res.status(404).send("Invalid ID");
+    return res.render('error.hbs', {
+      errorMessage: "Invalid ID.",
+    });
   }
   User.findById(id).then((user) => {
     if(!user) {
-      return res.status(404).send("ID not found.");
+      return res.render('error.hbs', {
+        errorMessage: "ID not found.",
+      });
     }
     res.render('rate.hbs', {
       pageTitle: 'Rating Page',
@@ -218,12 +239,16 @@ app.post('/rate/:id', checkSignIn, (req,res) => {
   var id = req.params.id;
   var form = new formidable.IncomingForm();
   if (!ObjectID.isValid(id)) {
-    return res.status(404).send("Invalid ID");
+    return res.render('error.hbs', {
+      errorMessage: "Invalid ID.",
+    });
   }
   form.parse(req, (err, fields, files) => {
     User.findById(id).then((user) => {
       if(!user) {
-        return res.status(404).send("ID not found.");
+        return res.render('error.hbs', {
+          errorMessage: "ID not found.",
+        });
       }
       user.updateRatings(fields,viewer);
       user.calculateRatings();
@@ -256,10 +281,14 @@ app.post('/createRoom', checkSignIn, (req, res) => {
 
     User.findById(req.session.user._id).then((user) => {
       if(!user) {
-        return res.status(404).send("ID not found.");
+        return res.render('error.hbs', {
+          errorMessage: "ID not found.",
+        });
       }
       if(user.roomID){
-        return res.status(400).send("You are already in another room group");
+        return res.render('error.hbs', {
+          errorMessage: "You are already in another group.",
+        });
       }
       user.roomID = room._id;
       user.save();
@@ -273,35 +302,60 @@ app.post('/createRoom', checkSignIn, (req, res) => {
 app.get('/rooms', (req,res) => {
   Room.find().then((rooms) => {
     if(!rooms){
-      return res.status(404).send("RoomID not found.");
+      return res.render('error.hbs', {
+        errorMessage: "No available rooms, create a new room.",
+      });
     }
-    res.render('rooms.hbs', {
-      pageTitle: 'All Rooms',
-      rooms: rooms
-    });
+    if(req.session.user) {
+      res.render('rooms.hbs', {
+        pageTitle: 'All Rooms',
+        rooms: rooms
+      });
+    }
+    else {
+      res.render('rooms2.hbs', {
+        pageTitle: 'All Rooms',
+        rooms: rooms
+      });
+    }
   });
 });
 
 app.get('/rooms/join/:id', checkSignIn, (req,res) => {
   var id = req.params.id;
   if (!ObjectID.isValid(id)) {
-    return res.status(404).send("Invalid ID");
+    return res.render('error.hbs', {
+      errorMessage: "Invalid ID.",
+    });
   }
   Room.findById(id).then((room) => {
     if(!room){
-      return res.status(404).send("RoomID not found.");
+      return res.render('error.hbs', {
+        errorMessage: "RoomID not found.",
+      });
     }
     for(i=0; i<room.users.length; i++) {
       if(room.users[i].userID == req.session.user._id){
-        return res.status(400).send("You are already in this room group");
+        return res.render('error.hbs', {
+          errorMessage: 'You are already in this room group.',
+        });
       }
+    }
+    if(room.users.length >= room.size) {
+      return res.render('error.hbs', {
+        errorMessage: 'Room full.',
+      });
     }
     User.findById(req.session.user._id).then((user) => {
       if(!user) {
-        return res.status(404).send("ID not found.");
+        return res.render('error.hbs', {
+          errorMessage: "ID not found.",
+        });
       }
       if(user.roomID){
-        return res.status(400).send("You are already in another room group");
+        return res.render('error.hbs', {
+          errorMessage: "You are already in another room group.",
+        });
       }
       user.roomID = id;
       user.save();
@@ -315,15 +369,21 @@ app.get('/rooms/join/:id', checkSignIn, (req,res) => {
 app.get('/rooms/leave', checkSignIn, (req,res) => {
   User.findById(req.session.user._id).then((user) => {
     if(!user) {
-      return res.status(404).send("User not found.");
+      return res.render('error.hbs', {
+        errorMessage: "User not found.",
+      });
     }
     //console.log(user.roomID);
     Room.findById(user.roomID).then((room) => {
       if(!room) {
-        return res.status(404).send("Room not found.");
+        return res.render('error.hbs', {
+          errorMessage: "Room not found.",
+        });
       }
       if(user._id == room.creatorID && room.users.length > 1) {
-        return res.status(400).send("Room creator cannot leave room while there are other users in the room");
+        return res.render('error.hbs', {
+          errorMessage: "Room creator cannot leave room while there are other users in the room.",
+        });
       }
       if (user._id == room.creatorID && room.users.length == 1) {
         Room.findByIdAndRemove(room._id).then(() => {
@@ -350,18 +410,26 @@ app.get('/rooms/leave', checkSignIn, (req,res) => {
 app.get('/kick/:id', checkSignIn,(req,res) => {
   id = req.params.id;
   if (id == req.session.user._id) {
-    return res.status(400).send("Cannot kick yourself.");
+    return res.render('error.hbs', {
+      errorMessage: "Cannot kick yourself.",
+    });
   }
   User.findById(id).then((user) => {
     if(!user) {
-      return res.status(404).send("User not found.");
+      return res.render('error.hbs', {
+        errorMessage: "User not found.",
+      });
     }
     Room.findById(user.roomID).then((room) => {
       if(!room) {
-        return res.status(404).send("Room not found.");
+        return res.render('error.hbs', {
+          errorMessage: "Room not found.",
+        });
       }
       if(room.creatorID != req.session.user._id) {
-        return res.status(401).send("Only the room creator can kick other users.");
+        return res.render('error.hbs', {
+          errorMessage: "Only the room creator can kick other users.",
+        });
       }
       room.removeUser(user._id).then(() => {
         //console.log(room.users);
@@ -397,32 +465,32 @@ app.get('/nogroup', checkSignIn, (req,res) => {
 });
 /////////////////////////////////////////////////////////////////
 
-//GET /users/me
-app.get('/users/me', authenticate, (req,res) => {
-  res.send(req.user);
-});
-
-//POST /login
-app.post('/login', (req,res) => {
-  var body = _.pick(req.body, ['username', 'password']);
-
-  User.findByCredentials(body.username, body.password).then((user) => {
-    return user.generateAuthToken().then((token) => {
-      res.header('x-auth', token).send(user);
-    });
-  }).catch((e) => {
-    res.status(400).send(e);
-  });
-});
-
-//DELETE /users/logout
-app.delete('/users/logout', authenticate, (req,res) => {
-  req.user.removeToken(req.token).then(() => {
-    res.status(200).send("Token deleted");
-  }, () => {
-    res.status(400).send("Token error");
-  });
-});
+// //GET /users/me
+// app.get('/users/me', authenticate, (req,res) => {
+//   res.send(req.user);
+// });
+//
+// //POST /login
+// app.post('/login', (req,res) => {
+//   var body = _.pick(req.body, ['username', 'password']);
+//
+//   User.findByCredentials(body.username, body.password).then((user) => {
+//     return user.generateAuthToken().then((token) => {
+//       res.header('x-auth', token).send(user);
+//     });
+//   }).catch((e) => {
+//     res.status(400).send(e);
+//   });
+// });
+//
+// //DELETE /users/logout
+// app.delete('/users/logout', authenticate, (req,res) => {
+//   req.user.removeToken(req.token).then(() => {
+//     res.status(200).send("Token deleted");
+//   }, () => {
+//     res.status(400).send("Token error");
+//   });
+// });
 
 // app.use(express.static(__dirname + '/public'));
 
