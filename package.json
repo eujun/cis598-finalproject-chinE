@@ -26,5 +26,8 @@
     "mongodb": "^2.2.33",
     "mongoose": "^4.12.3",
     "validator": "^9.0.0"
+  },
+  "devDependencies": {
+        "loadtest": "*"
   }
 }
