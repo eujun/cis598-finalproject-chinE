@@ -96,7 +96,8 @@ app.get('/profile', checkSignIn, (req,res) => {
         phone: user.phone,
         email: user.email,
         rating: Math.round(user.rating * 100) / 100,
-        room: room
+        room: room,
+        ratings: user.ratings
       });
     });
   });
