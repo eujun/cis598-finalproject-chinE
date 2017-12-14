@@ -214,6 +214,7 @@ app.get('/users/:id', checkSignIn, (req,res) => {
 // GET /rate/:id
 app.get('/rate/:id', checkSignIn, (req,res) => {
   var id = req.params.id;
+  var viewerid = req.session.user._id;
   if (!ObjectID.isValid(req.params.id)) {
     return res.render('error.hbs', {
       errorMessage: "Invalid ID.",
@@ -225,10 +226,17 @@ app.get('/rate/:id', checkSignIn, (req,res) => {
         errorMessage: "ID not found.",
       });
     }
-    res.render('rate.hbs', {
-      pageTitle: 'Rating Page',
-      id: id,
-      name: user.name
+    User.findById(viewerid).then((user2) => {
+      if (user2.roomID != user.roomID) {
+        return res.render('error.hbs', {
+          errorMessage: "Only can rate users in the same room.",
+        });
+      }
+      res.render('rate.hbs', {
+        pageTitle: 'Rating Page',
+        id: id,
+        name: user.name
+      });
     });
   });
 });
